@@ -1,14 +1,12 @@
 import frappe
 from frappe.utils import flt
 
-
 def before_taxes_and_totals(doc, method=None):
-
+ 
     fim_exists = any(flt(item.get("custom_fim_value", 0)) for item in doc.items)
-
     if not fim_exists:
-        
         return
+
 
     for tax in doc.taxes:
         tax.tax_amount = 0.0
@@ -18,20 +16,15 @@ def before_taxes_and_totals(doc, method=None):
         tax.base_total = 0.0
         tax.item_wise_tax_detail = "{}"
 
+  
     for item in doc.items:
-        if getattr(item, "custom_fim_value", None):
-            item.custom_assessible_value = flt(item.amount) + flt(item.custom_fim_value)
+        custom_value = flt(getattr(item, "custom_fim_value", 0))
 
-        assessible = (
-            flt(getattr(item, "custom_assessible_value", 0.0))
-            or flt(item.base_net_amount)
-            or flt(item.amount)
-        )
+        assessible = flt(item.amount) + custom_value
+        item.custom_assessible_value = assessible
 
+       
         item.taxable_value = assessible
-        # item.net_amount = assessible
-        # item.base_net_amount = assessible
-        # item.base_amount = assessible
 
         for tax in doc.taxes:
             rate = flt(tax.rate)
@@ -43,6 +36,7 @@ def before_taxes_and_totals(doc, method=None):
             tax.tax_amount += tax_amount
             tax.base_tax_amount += tax_amount
 
+          
             try:
                 detail = frappe.parse_json(tax.item_wise_tax_detail) or {}
             except Exception:
@@ -50,7 +44,6 @@ def before_taxes_and_totals(doc, method=None):
 
             key = item.item_code or item.name or f"row-{item.idx}"
             prev = detail.get(key)
-
             if prev:
                 detail[key] = [rate, flt(prev[1]) + tax_amount]
             else:
@@ -58,37 +51,26 @@ def before_taxes_and_totals(doc, method=None):
 
             tax.item_wise_tax_detail = frappe.as_json(detail)
 
-    doc.net_total = sum(flt(i.net_amount) for i in doc.items)
+
+    doc.net_total = sum(flt(i.amount) for i in doc.items)
     doc.base_net_total = doc.net_total
 
-    for tax in doc.taxes:
-        if not tax.base_tax_amount:
-            tax.base_tax_amount = tax.tax_amount
-
-    cumulative = flt(doc.net_total)
-    base_cumulative = flt(doc.base_net_total)
-
-    for tax in doc.taxes:
-        cumulative += tax.tax_amount
-        tax.total = cumulative
-        tax.charge_type = "Actual"
-
-        base_cumulative += tax.base_tax_amount
-        tax.base_total = base_cumulative
-
+  
     doc.total_taxes_and_charges = sum(flt(t.tax_amount) for t in doc.taxes)
     doc.base_total_taxes_and_charges = sum(flt(t.base_tax_amount) for t in doc.taxes)
 
-    # doc.total = doc.net_total + doc.total_taxes_and_charges
+ 
+    doc.total = doc.net_total + doc.total_taxes_and_charges
     doc.base_total = doc.base_net_total + doc.base_total_taxes_and_charges
 
-    # doc.rounded_total = round(doc.total, 2)
+    doc.rounded_total = round(doc.total, 2)
     doc.rounding_adjustment = doc.rounded_total - doc.total
 
     doc.base_rounded_total = round(doc.base_total, 2)
     doc.base_rounding_adjustment = doc.base_rounded_total - doc.base_total
 
-    # doc.grand_total = doc.rounded_total
+   
+    doc.grand_total = doc.rounded_total
     doc.base_grand_total = doc.base_rounded_total
 
     if hasattr(doc, "outstanding_amount"):

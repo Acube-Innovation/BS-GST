@@ -142,12 +142,12 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# import gst_custom_tax.overrides.tax_overrides
+import gst_custom_tax.overrides.tax_overrides
 
-from gst_custom_tax.gst_custom_tax.overrides.tax_overrides import custom_validate_taxes_and_charges
-import erpnext.controllers.accounts_controller as acc_ctrl
+# from gst_custom_tax.overrides.tax_overrides import custom_validate_taxes_and_charges
+# import erpnext.controllers.accounts_controller as acc_ctrl
 
-acc_ctrl.validate_taxes_and_charges = custom_validate_taxes_and_charges
+# acc_ctrl.validate_taxes_and_charges = custom_validate_taxes_and_charges
 # from gst_custom_tax.overrides.tax_overrides import disable_gst_validation
 
 
@@ -157,10 +157,11 @@ doc_events = {
      
         "before_validate":[ "gst_custom_tax.doc_events.sales_invoice.patch_india_compliance_tax",
        "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals"],
-        "validate": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals"
-        # "on_submit": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals",
+        "validate": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals",
                  
     },
+
+
     "Bill of Entry": {
         "before_validate": "gst_custom_tax.doc_events.bill_of_entry.override_bill_of_entry_tax_validation"
     }

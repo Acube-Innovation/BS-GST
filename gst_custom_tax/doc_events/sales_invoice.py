@@ -29,9 +29,9 @@ def before_taxes_and_totals(doc, method=None):
         )
 
         item.taxable_value = assessible
-        item.net_amount = assessible
-        item.base_net_amount = assessible
-        item.base_amount = assessible
+        # item.net_amount = assessible
+        # item.base_net_amount = assessible
+        # item.base_amount = assessible
 
         for tax in doc.taxes:
             rate = flt(tax.rate)

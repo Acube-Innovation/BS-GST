@@ -157,8 +157,8 @@ doc_events = {
      
         "before_validate":[ "gst_custom_tax.doc_events.sales_invoice.patch_india_compliance_tax",
        "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals"],
-        "after_insert": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals",
-        "on_submit": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals",
+        "validate": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals"
+        # "on_submit": "gst_custom_tax.doc_events.sales_invoice.before_taxes_and_totals",
                  
     },
     "Bill of Entry": {

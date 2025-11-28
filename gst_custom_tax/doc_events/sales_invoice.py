@@ -165,8 +165,6 @@ def patch_ic_validate_item_gst_details():
     ItemGSTDetails.validate_item_gst_details = patched
 
 
-
-import frappe
 import erpnext.controllers.taxes_and_totals as tax_module
 
 def no_validate(*args, **kwargs):

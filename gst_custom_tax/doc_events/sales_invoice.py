@@ -9,12 +9,14 @@ def before_taxes_and_totals(doc, method=None):
 
 
     for tax in doc.taxes:
-        tax.tax_amount = 0.0
-        tax.base_tax_amount = 0.0
-        tax.tax_amount_after_discount_amount = 0.0
-        tax.total = 0.0
-        tax.base_total = 0.0
-        tax.item_wise_tax_detail = "{}"
+        if tax.charge_type != "Rounding Adjustment":
+            tax.tax_amount = 0.0
+            tax.base_tax_amount = 0.0
+            tax.tax_amount_after_discount_amount = 0.0
+            tax.total = 0.0
+            tax.base_total = 0.0
+            tax.item_wise_tax_detail = "{}"
+
 
   
     for item in doc.items:
@@ -63,15 +65,13 @@ def before_taxes_and_totals(doc, method=None):
     doc.total = doc.net_total + doc.total_taxes_and_charges
     doc.base_total = doc.base_net_total + doc.base_total_taxes_and_charges
 
-    doc.rounded_total = round(doc.total, 2)
-    doc.rounding_adjustment = doc.rounded_total - doc.total
 
-    doc.base_rounded_total = round(doc.base_total, 2)
+    doc.rounding_adjustment = doc.rounded_total - doc.total
     doc.base_rounding_adjustment = doc.base_rounded_total - doc.base_total
 
-   
     doc.grand_total = doc.rounded_total
     doc.base_grand_total = doc.base_rounded_total
+
 
     if hasattr(doc, "outstanding_amount"):
         doc.outstanding_amount = doc.grand_total
@@ -81,11 +81,18 @@ def before_taxes_and_totals(doc, method=None):
     for tax in doc.taxes:
         cumulative += tax.tax_amount
         tax.total = cumulative
+        tax.tax_amount_after_discount_amount =tax.tax_amount
         if tax.charge_type != "Rounding Adjustment":
             tax.charge_type = "Actual"
 
         base_cumulative += tax.base_tax_amount
         tax.base_total = base_cumulative
+      
+        if tax.charge_type == "Rounding Adjustment":
+            tax.tax_amount = doc.rounding_adjustment
+            tax.base_tax_amount = doc.base_rounding_adjustment
+            tax.tax_amount_after_discount_amount = tax.tax_amount
+
 
 
 def before_taxes_and_totals_submit(doc, method=None):
